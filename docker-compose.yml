@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:11.2
+    container_name: legiscan_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-legiscan_api}
+      MYSQL_USER: ${DB_USER:-legiscan_api}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-legiscan_password}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./legiscan/schema-mysql.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    networks:
+      - legiscan_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legiscan_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-legiscan_api}
+      DB_USER: ${DB_USER:-legiscan_api}
+      DB_PASSWORD: ${DB_PASSWORD:-legiscan_password}
+      DB_PORT: 3306
+      API_KEY: ${LEGISCAN_API_KEY:-}
+    volumes:
+      - ./legiscan:/var/www/html
+      - app_cache:/var/www/html/cache
+      - app_logs:/var/www/html/log
+    ports:
+      - "${APP_PORT:-8080}:80"
+    networks:
+      - legiscan_network
+
+networks:
+  legiscan_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  app_cache:
+    driver: local
+  app_logs:
+    driver: local
