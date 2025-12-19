@@ -10,28 +10,46 @@ Docker containerized setup for the LegiScan API Client with MariaDB database.
 
 ## Quick Start
 
-1. **Copy the environment file**
+1. **Download and extract the LegiScan client**
+
+   Download the LegiScan API client from https://legiscan.com/legiscan
+
+   ```bash
+   # Extract the tar.gz file to the project root
+   tar -xzf legiscan-2.x.x.tar.gz
+
+   # This will create a legiscan/ directory with all the necessary files
+   ```
+
+   The extracted `legiscan/` directory should contain:
+   - `LegiScan.php` - Main API client class
+   - `config.dist.php` - Configuration template
+   - `schema-mysql.sql` - Database schema
+   - CLI tools: `legiscan-cli.php`, `legiscan-bulk.php`, `legiscand.php`
+   - Other supporting files
+
+2. **Copy the environment file**
    ```bash
    cp .env.example .env
    ```
 
-2. **Edit `.env` and add your LegiScan API key**
+3. **Edit `.env` and add your LegiScan API key**
    ```bash
    vim .env
    # Set LEGISCAN_API_KEY=your_api_key_here
    ```
 
-3. **Start the containers**
+4. **Start the containers**
    ```bash
    docker-compose up -d
    ```
 
-4. **Initialize the configuration**
+5. **Initialize the configuration**
    ```bash
    ./init-config.sh
    ```
 
-5. **Access the application**
+6. **Access the application**
    - Web UI: http://localhost:8080/legiscan-ui.php
    - Database: localhost:3306
 
